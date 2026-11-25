@@ -1,6 +1,6 @@
-# evo-code-editor
+# Code Editor（evo-code-editor）
 
-Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 のエディタにするプラグイン（0.1.0・試作）。
+Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 のエディタにするプラグイン（0.1.0）。
 本体（`manager/`）は変えない。
 
 - 色分け（PHP・HTML・CSS・JavaScript・JSON・XML・SQL・Markdown と、ソースタグ）、行番号、折りたたみ、対応する括弧、検索と置換（Ctrl+F）、Tab での字下げ
@@ -31,3 +31,7 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 
 組み立ては `npm ci && npm run build`。出力（`assets/plugins/code-editor/dist/`）もリポジトリに入れる。
 同梱の CodeMirror 6 は MIT ライセンス（`assets/plugins/code-editor/LICENSE-codemirror.txt`）。
+
+## ライセンス
+
+GPL-2.0-or-later（`LICENSE`）。
