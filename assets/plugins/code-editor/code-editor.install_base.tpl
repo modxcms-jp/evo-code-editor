@@ -12,4 +12,8 @@
  * @internal    @installset base
  */
 
-require MODX_BASE_PATH . 'assets/plugins/code-editor/plugin.php';
+// ファイルだけ無くなっても、管理画面を止めない
+$f = MODX_BASE_PATH . 'assets/plugins/code-editor/plugin.php';
+if (is_file($f)) {
+    include $f;
+}
