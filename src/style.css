@@ -1,0 +1,186 @@
+/* evo-code-editor。色はテーマの変数を使い、無ければ既定値 */
+textarea.evo-ce-source {
+    display: none !important;
+}
+
+.evo-ce {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 120px;
+    overflow: hidden;
+    resize: vertical;
+    border: 1px solid #ccc;
+    background: var(--color-surface, #fff);
+    text-align: left;
+}
+
+/* ファイルの編集のダイアログ。textarea（.evo-fb-text-area）と同じだけ伸びる */
+.evo-ce.evo-ce-file {
+    flex: 1 1 auto;
+    height: 60vh;
+    min-height: 0;
+    resize: none;
+}
+
+.evo-ce .cm-editor {
+    height: 100%;
+    font-size: 13px;
+    color: #222;
+}
+
+.evo-ce .cm-editor.cm-focused {
+    outline: 2px solid color-mix(in srgb, var(--color-primary, #1f5f8b) 55%, transparent);
+    outline-offset: -2px;
+}
+
+.evo-ce .cm-scroller {
+    font-family: Consolas, 'Courier New', Courier, 'MS Gothic', monospace;
+    line-height: 1.5;
+}
+
+.evo-ce .cm-gutters {
+    background: color-mix(in srgb, var(--color-text-primary, #333) 4%, var(--color-surface, #fff));
+    color: #6b7680;
+    border-right: 1px solid #ddd;
+}
+
+.evo-ce.is-readonly .cm-content {
+    background: #f6f6f6;
+}
+
+.evo-ce.mm_required {
+    border-color: #c00;
+}
+
+/* 検索の欄。管理画面のフォームの大きな余白・影を打ち消す */
+.evo-ce .cm-panels {
+    background: #f4f5f6;
+    color: #222;
+    border-bottom: 1px solid #ddd;
+}
+
+.evo-ce .cm-panel.cm-search {
+    padding: 6px 28px 6px 8px;
+    font-size: 12px;
+}
+
+.evo-ce .cm-panel input[type='text'],
+.evo-ce .cm-panel input:not([type]),
+.evo-ce .cm-panel .cm-textfield {
+    width: 190px;
+    height: auto;
+    min-height: 0;
+    margin: 2px 4px 2px 0;
+    padding: 3px 6px;
+    font-size: 12px;
+    box-shadow: none;
+}
+
+.evo-ce .cm-panel .cm-button {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    margin: 2px 4px 2px 0;
+    padding: 3px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #222;
+    background: #fff;
+    background-image: none;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    box-shadow: none;
+    text-shadow: none;
+    cursor: pointer;
+}
+
+.evo-ce .cm-panel {
+    position: relative;
+}
+
+.evo-ce .cm-panel button.evo-ce-close {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    min-width: 0;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    color: #444;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.evo-ce .cm-panel label {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    width: auto;
+    margin: 0 6px 0 0;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* 閉じない「<?php」などに色が付くので、対になる括弧だけを示す */
+.evo-ce .cm-editor .cm-content .cm-nonmatchingBracket {
+    background: none;
+}
+
+/* Evolution CMS のソースタグ */
+.evo-ce .cm-modx,
+.evo-ce .cm-modx * {
+    color: inherit;
+}
+
+.evo-ce .cm-modx {
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+.evo-ce .cm-modx-call { color: #7a1fa2; background: rgb(122 31 162 / 8%); }
+.evo-ce .cm-modx-chunk { color: #00695c; background: rgb(0 105 92 / 8%); }
+.evo-ce .cm-modx-value { color: #a0400a; background: rgb(160 64 10 / 8%); }
+.evo-ce .cm-modx-ph { color: #1a53a8; background: rgb(26 83 168 / 8%); }
+.evo-ce .cm-modx-setting,
+.evo-ce .cm-modx-info { color: #555; background: rgb(0 0 0 / 6%); }
+.evo-ce .cm-modx-link { color: #0b4f8a; background: rgb(11 79 138 / 8%); }
+.evo-ce .cm-modx-param { color: #7a1fa2; }
+
+/* 使う・使わないの切り替え。見出しの中では右端にそろえる */
+.code-editor-header:has(> .evo-ce-toggle) > .code-editor-title {
+    margin-right: auto;
+}
+
+.code-editor-header > .evo-ce-toggle {
+    margin-left: 12px;
+}
+
+.evo-ce-toggle {
+    width: auto;
+    min-width: 0;
+    padding: 1px 8px;
+    font: inherit;
+    font-size: 12px;
+    color: #444;
+    background: #fff;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    box-shadow: none;
+    text-shadow: none;
+    cursor: pointer;
+}
+
+.evo-ce-toggle:hover {
+    border-color: #666;
+}
+
+.evo-ce-toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
