@@ -11,6 +11,9 @@ const bridges = new Set();
 const byArea = new WeakMap();
 // 1 つの欄について、替えるかどうかを決めるのは 1 回だけ（送信の前に選択が変わることがあるため）
 const skipped = new WeakSet();
+const api = {};
+// TinyMCE のソースのダイアログの欄（切り替えで付け直すため、設定を覚える）
+const sourceAreas = new WeakMap();
 
 function enabled() {
     try {
@@ -40,7 +43,8 @@ function addToggle(ta) {
     });
     label(button);
     const box = ta.closest('.code-editor');
-    const header = box && box.querySelector('.code-editor-header');
+    const dialog = ta.closest('.tox-dialog');
+    const header = (box && box.querySelector('.code-editor-header')) || (dialog && dialog.querySelector('.tox-dialog__footer-start'));
     if (header) {
         header.appendChild(button);
     } else {
@@ -55,13 +59,14 @@ function label(button) {
     button.textContent = enabled() ? TEXT.off : TEXT.on;
 }
 
-function attach(ta) {
+function attach(ta, given) {
     if (byArea.has(ta) || skipped.has(ta)) return;
-    const target = describe(ta, config);
+    const target = given || describe(ta, config);
     if (!target) {
         skipped.add(ta);
         return;
     }
+    if (given) sourceAreas.set(ta, given);
     addToggle(ta);
     if (!enabled()) return;
     let bridge = null;
@@ -88,7 +93,8 @@ function detach(bridge) {
 }
 
 function scan() {
-    document.querySelectorAll(SELECTOR).forEach(attach);
+    document.querySelectorAll(SELECTOR).forEach((ta) => attach(ta));
+    document.querySelectorAll('.tox-dialog textarea').forEach((ta) => sourceAreas.has(ta) && attach(ta, sourceAreas.get(ta)));
 }
 
 // evoshell:unload は、モーダルの開閉でも出る。画面から外れた欄だけを片付ける
@@ -107,19 +113,54 @@ function onUnload() {
     queueMicrotask(() => setTimeout(sweep, 0));
 }
 
-// あとからリッチテキストが付いたら、素の欄に戻して渡す
+// TinyMCE: あとからリッチテキストが付いた欄は素に戻して渡す。ソースのダイアログの欄には、同じエディタを付ける
 function watchRichEditor() {
     const mce = window.tinymce;
-    if (!mce || mce.__evoCodeEditor || typeof mce.on !== 'function') return;
-    mce.__evoCodeEditor = true;
+    if (!mce || mce.__evoCodeEditor === api || typeof mce.on !== 'function') return;
+    mce.__evoCodeEditor = api;
+    const watch = (editor) => {
+        editor.on('OpenWindow', (e) => current() && openSource(e.dialog));
+        editor.on('CloseWindow', () => current() && setTimeout(sweep, 0));
+    };
     mce.on('AddEditor', (e) => {
+        if (!current() || !e.editor) return;
         bridges.forEach((b) => {
-            if (e.editor && b.ta.id && b.ta.id === e.editor.id) {
+            if (b.ta.id && b.ta.id === e.editor.id) {
                 skipped.add(b.ta);
                 detach(b);
             }
         });
+        watch(e.editor);
     });
+    (mce.get() || []).forEach(watch);
+}
+
+// シェルが文書ごと差し替えると、このスクリプトがもう一度動く。古いほうは何もしない
+function current() {
+    return window.evoCodeEditor === api;
+}
+
+function openSource(dialog) {
+    let keys = [];
+    try {
+        keys = Object.keys(dialog.getData());
+    } catch (e) {
+        return;
+    }
+    // ソースのダイアログは「code」の欄だけを持つ
+    if (keys.length !== 1 || keys[0] !== 'code') return;
+    const find = (n) => {
+        const ta = [...document.querySelectorAll('.tox-dialog textarea')].pop();
+        if (!ta) {
+            if (n > 0) setTimeout(() => find(n - 1), 30);
+            return;
+        }
+        const focused = document.activeElement === ta;
+        attach(ta, { kind: 'html', label: 'HTML', wrapperClass: 'evo-ce-tox', trapKeys: true });
+        const bridge = byArea.get(ta);
+        if (bridge && (focused || document.activeElement === document.body)) bridge.view.focus();
+    };
+    setTimeout(() => find(10), 0);
 }
 
 function start() {
@@ -133,6 +174,8 @@ if (!document.documentElement.dataset.evoCodeEditor) {
     document.documentElement.dataset.evoCodeEditor = '1';
     document.addEventListener('evoshell:unload', onUnload);
     ['evoshell:load', 'evoshell:modalload', 'evoshell:modalclose'].forEach((type) => document.addEventListener(type, start));
+    // TinyMCE はあとから読まれる。ソースのボタンを押すより前に、必ず気づく
+    ['focusin', 'pointerdown'].forEach((type) => document.addEventListener(type, watchRichEditor, true));
     // タブを開いたときに、隠れている間に測れなかった大きさを測り直す
     document.addEventListener('click', (e) => {
         if (e.target.closest && e.target.closest('.tab-row, .tab')) {
@@ -147,4 +190,4 @@ if (!document.documentElement.dataset.evoCodeEditor) {
 }
 
 // 試験・調査用
-window.evoCodeEditor = { scan, bridges, of: (ta) => byArea.get(ta) || null };
+window.evoCodeEditor = Object.assign(api, { scan, bridges, of: (ta) => byArea.get(ta) || null });

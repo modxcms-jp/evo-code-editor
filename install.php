@@ -36,7 +36,7 @@ if (!$evt) {
     exit(1);
 }
 $fields = [
-    'description' => $modx->db->escape('<strong>0.1.0</strong> コード欄の色分け（CodeMirror 6）'),
+    'description' => $modx->db->escape('<strong>0.2.0</strong> コード欄の色分け（CodeMirror 6）'),
     'plugincode' => $modx->db->escape("\$f = MODX_BASE_PATH . 'assets/plugins/code-editor/plugin.php';\nif (is_file(\$f)) {\n    include \$f;\n}"),
     'disabled' => 0,
 ];

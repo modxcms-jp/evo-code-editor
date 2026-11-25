@@ -10,21 +10,25 @@ import { modxTags } from './modxTags.js';
 
 const startsWithTag = (text) => /^\s*<\?/.test(text);
 
-// 開始タグの無い PHP（スニペットなど）は plain、あれば HTML の中の PHP として読む
-const phpCode = (text) => [php({ plain: !startsWithTag(text) })];
+// タグは自動で閉じない（手で閉じると二重になる）。php() は、素のままだと自動で閉じる HTML を含む
+const htmlBase = html({ selfClosingTags: true, autoCloseTags: false });
+
+// 開始タグの無い PHP（スニペットなど）は plain、あれば HTML の中の PHP として読む。ファイルは先頭が HTML のこともあるので、いつも後者
+const phpFile = () => [php({ baseLanguage: htmlBase.language })];
+const phpCode = (text) => startsWithTag(text) ? phpFile() : [php({ plain: true, baseLanguage: null })];
 // テンプレート・チャンク・本文・HTML のファイル。PHP の開始タグがあれば PHP も読む
-const htmlCode = (text) => [/<\?(php|=)/i.test(text) ? php() : html({ selfClosingTags: true }), modxTags];
+const htmlCode = (text) => [/<\?(php|=)/i.test(text) ? php({ baseLanguage: htmlBase.language }) : htmlBase, modxTags];
 
 const BY_EXT = {
-    php: phpCode, inc: phpCode, phtml: htmlCode,
+    php: phpFile, inc: phpFile, phtml: htmlCode,
     html: htmlCode, htm: htmlCode, tpl: htmlCode, xhtml: htmlCode,
     css: () => [css()],
-    js: () => [javascript({ jsx: true })], mjs: () => [javascript({ jsx: true })], cjs: () => [javascript()],
+    js: () => [javascript()], mjs: () => [javascript()], cjs: () => [javascript()],
     ts: () => [javascript({ typescript: true })],
     json: () => [json()], map: () => [json()],
-    xml: () => [xml()], svg: () => [xml()], rss: () => [xml()],
+    xml: () => [xml({ autoCloseTags: false })], svg: () => [xml({ autoCloseTags: false })], rss: () => [xml({ autoCloseTags: false })],
     sql: () => [sql()],
-    md: () => [markdown()], markdown: () => [markdown()],
+    md: () => [markdown({ htmlTagLanguage: htmlBase })], markdown: () => [markdown({ htmlTagLanguage: htmlBase })],
     // SCSS・LESS は、専用の文法を入れず CSS として読む（入れ子などは素の色になる）
     scss: () => [css()], less: () => [css()]
 };
