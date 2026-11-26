@@ -117,12 +117,16 @@ function onUnload() {
 function watchRichEditor() {
     const mce = window.tinymce;
     if (!mce || mce.__evoCodeEditor === api || typeof mce.on !== 'function') return;
+    // 文書の差し替えの前に登録したもの（古いスクリプトのもの）を外してから付ける
+    if (typeof mce.__evoCodeEditorUnwatch === 'function') mce.__evoCodeEditorUnwatch();
     mce.__evoCodeEditor = api;
+    const onOpen = (e) => current() && openSource(e.dialog);
+    const onClose = () => current() && setTimeout(sweep, 0);
     const watch = (editor) => {
-        editor.on('OpenWindow', (e) => current() && openSource(e.dialog));
-        editor.on('CloseWindow', () => current() && setTimeout(sweep, 0));
+        editor.on('OpenWindow', onOpen);
+        editor.on('CloseWindow', onClose);
     };
-    mce.on('AddEditor', (e) => {
+    const onAdd = (e) => {
         if (!current() || !e.editor) return;
         bridges.forEach((b) => {
             if (b.ta.id && b.ta.id === e.editor.id) {
@@ -131,8 +135,16 @@ function watchRichEditor() {
             }
         });
         watch(e.editor);
-    });
+    };
+    mce.on('AddEditor', onAdd);
     (mce.get() || []).forEach(watch);
+    mce.__evoCodeEditorUnwatch = () => {
+        mce.off('AddEditor', onAdd);
+        (mce.get() || []).forEach((editor) => {
+            editor.off('OpenWindow', onOpen);
+            editor.off('CloseWindow', onClose);
+        });
+    };
 }
 
 // シェルが文書ごと差し替えると、このスクリプトがもう一度動く。古いほうは何もしない

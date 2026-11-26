@@ -12,12 +12,15 @@ const startsWithTag = (text) => /^\s*<\?/.test(text);
 
 // タグは自動で閉じない（手で閉じると二重になる）。php() は、素のままだと自動で閉じる HTML を含む
 const htmlBase = html({ selfClosingTags: true, autoCloseTags: false });
+// PHP・Markdown の中の HTML は、開きタグと閉じタグが別のところ（PHP の出力・別の段落）にあってよいので、対応を調べない
+const htmlNoMatch = html({ selfClosingTags: true, autoCloseTags: false, matchClosingTags: false });
 
 // 開始タグの無い PHP（スニペットなど）は plain、あれば HTML の中の PHP として読む。ファイルは先頭が HTML のこともあるので、いつも後者
-const phpFile = () => [php({ baseLanguage: htmlBase.language })];
+const phpInHtml = () => php({ baseLanguage: htmlNoMatch.language });
+const phpFile = () => [phpInHtml()];
 const phpCode = (text) => startsWithTag(text) ? phpFile() : [php({ plain: true, baseLanguage: null })];
 // テンプレート・チャンク・本文・HTML のファイル。PHP の開始タグがあれば PHP も読む
-const htmlCode = (text) => [/<\?(php|=)/i.test(text) ? php({ baseLanguage: htmlBase.language }) : htmlBase, modxTags];
+const htmlCode = (text) => [/<\?(php|=)/i.test(text) ? phpInHtml() : htmlBase, modxTags];
 
 const BY_EXT = {
     php: phpFile, inc: phpFile, phtml: htmlCode,
@@ -28,7 +31,7 @@ const BY_EXT = {
     json: () => [json()], map: () => [json()],
     xml: () => [xml({ autoCloseTags: false })], svg: () => [xml({ autoCloseTags: false })], rss: () => [xml({ autoCloseTags: false })],
     sql: () => [sql()],
-    md: () => [markdown({ htmlTagLanguage: htmlBase })], markdown: () => [markdown({ htmlTagLanguage: htmlBase })],
+    md: () => [markdown({ htmlTagLanguage: htmlNoMatch })], markdown: () => [markdown({ htmlTagLanguage: htmlNoMatch })],
     // SCSS・LESS は、専用の文法を入れず CSS として読む（入れ子などは素の色になる）
     scss: () => [css()], less: () => [css()]
 };

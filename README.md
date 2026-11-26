@@ -5,7 +5,7 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 
 - 色分け（PHP・HTML・CSS・JavaScript・JSON・XML・SQL・Markdown と、ソースタグ）、行番号、折りたたみ、対応する括弧、検索と置換（Ctrl+F）、Tab での字下げ
 - 欄の上のボタンで、素の欄との切り替え（人ごとにブラウザで記憶）
-- キーボードだけで欄の外へ出るには、Esc のあとに Tab（ファイルの編集は Esc で閉じるので、Ctrl+M のあとに Tab）
+- キーボードだけで欄の外へ出るには、Esc のあとに Tab（ファイルの編集と TinyMCE のソースのダイアログは Esc で閉じるので、Ctrl+M のあとに Tab）
 
 ## 対象
 
