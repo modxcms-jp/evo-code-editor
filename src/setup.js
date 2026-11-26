@@ -9,6 +9,7 @@ import {
     bracketMatching, foldGutter, foldKeymap, indentOnInput, indentUnit, syntaxHighlighting, HighlightStyle
 } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
+import { closeCompletion, completionStatus } from '@codemirror/autocomplete';
 
 const PHRASES_JA = {
     'Find': '検索', 'Replace': '置換', 'next': '次へ', 'previous': '前へ', 'all': 'すべて選択',
@@ -95,7 +96,8 @@ export function baseExtensions(text, o) {
             if (searchPanelOpen(u.state)) isolatePanel(u.view);
         }),
         Prec.highest(keymap.of([
-            // ファイルのダイアログやモーダルは Escape で閉じる。検索を閉じる・選択を 1 つに戻すだけのときは、外へ伝えない
+            // ファイルのダイアログやモーダルは Escape で閉じる。補完や検索を閉じる・選択を 1 つに戻すだけのときは、外へ伝えない
+            { key: 'Escape', run: (v) => completionStatus(v.state) !== null && closeCompletion(v), stopPropagation: true },
             { key: 'Escape', run: (v) => searchPanelOpen(v.state) && closeSearchPanel(v), scope: 'editor search-panel', stopPropagation: true },
             { key: 'Escape', run: simplifySelection, stopPropagation: true },
             { key: 'Mod-s', run: o.onSave }

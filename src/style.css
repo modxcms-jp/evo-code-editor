@@ -240,3 +240,10 @@ textarea.evo-ce-source {
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* 補完の一覧。説明は斜体にせず（和文の斜体は読みにくい）、灰色で区別する */
+.evo-ce .cm-tooltip-autocomplete .cm-completionDetail {
+    margin-left: 1em;
+    font-style: normal;
+    color: #666;
+}

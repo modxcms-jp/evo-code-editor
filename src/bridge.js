@@ -1,6 +1,7 @@
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { searchPanelOpen } from '@codemirror/search';
+import { completionStatus } from '@codemirror/autocomplete';
 import { baseExtensions } from './setup.js';
 import { languageFor } from './languages.js';
 
@@ -16,7 +17,7 @@ const LAZY_LENGTH = 300000;
 export class Bridge {
     /**
      * @param {HTMLTextAreaElement} ta
-     * @param {object} o { kind, fileName(), label, lang, wrapperClass }
+     * @param {object} o { kind, fileName(), label, lang, names, wrapperClass }
      */
     constructor(ta, o) {
         this.ta = ta;
@@ -55,7 +56,7 @@ export class Bridge {
         const fileName = this.o.fileName ? this.o.fileName() : '';
         let language = [];
         try {
-            language = languageFor(this.o.kind, text, fileName);
+            language = languageFor(this.o.kind, text, fileName, this.o.names);
         } catch (e) {
             console.warn('[evo-code-editor]', e);
         }
@@ -178,13 +179,13 @@ export class Bridge {
             }, 0);
         });
         // TinyMCE のダイアログは Enter で確定、Tab で次の部品へ移り、Escape を離したときに閉じる。
-        // 閉じるための Escape だけを外へ出す（検索を閉じる・選択を解く・変換を取り消す Escape は出さない）
+        // 閉じるための Escape だけを外へ出す（補完や検索を閉じる・選択を解く・変換を取り消す Escape は出さない）
         if (this.o.trapKeys) {
             let consumed = false;
             on(this.wrapper, 'keydown', (e) => {
                 if (e.key !== 'Escape') return;
                 const { selection } = this.view.state;
-                consumed = e.isComposing || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty;
+                consumed = e.isComposing || completionStatus(this.view.state) !== null || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty;
             }, true);
             ['keydown', 'keyup', 'keypress'].forEach((type) => on(this.wrapper, type, (e) => {
                 if (e.key !== 'Escape' || consumed) e.stopPropagation();
