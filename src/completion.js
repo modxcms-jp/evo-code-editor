@@ -25,6 +25,7 @@ const TAGS = {
 const NAME = '[^\\s{}\\[\\]()*!?&:=`"\'<>]*';
 const BEFORE = new RegExp(`(\\{\\{|\\[\\[|\\[!|\\[\\*#?|\\[\\()(${NAME})$`);
 const VALID = new RegExp(`^${NAME}$`);
+const TAIL = new RegExp(`^${NAME}`);
 
 function options(names, close) {
     const make = (type) => ([label, detail]) => ({ label, detail: detail || undefined, type, apply: applyWith(close) });
@@ -38,13 +39,17 @@ function options(names, close) {
     return (keys) => keys.flatMap((k) => lists[k]);
 }
 
-// 名前と閉じの記号を入れる。すぐ後ろに閉じの記号があれば、名前だけ（二重にしない）
+// 名前と閉じの記号を入れる。後ろに続く名前の残りも置き換える。
+// その後ろが閉じの記号・引数（?・&）・モディファイア（:）なら、すでにあるタグの名前の打ち直しなので、名前だけ入れる
 function applyWith(close) {
     return (view, completion, from, to) => {
-        const after = view.state.doc.sliceString(to, to + close.length);
-        const insert = completion.label + (after === close ? '' : close);
+        const line = view.state.doc.lineAt(to);
+        const rest = line.text.slice(to - line.from);
+        const end = to + TAIL.exec(rest)[0].length;
+        const next = rest.slice(end - to);
+        const insert = completion.label + (next.startsWith(close) || /^\s*[?&:]/.test(next) ? '' : close);
         view.dispatch({
-            changes: { from, to, insert },
+            changes: { from, to: end, insert },
             selection: { anchor: from + insert.length },
             annotations: pickedCompletion.of(completion),
             userEvent: 'input.complete'
