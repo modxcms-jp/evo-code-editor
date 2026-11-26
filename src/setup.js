@@ -22,22 +22,22 @@ const PHRASES_JA = {
     'Control character': '制御文字', 'Selection deleted': '選択を削除しました'
 };
 
-// 明るい背景向けの色（1.3 の 7 テーマはどれも編集欄が明るい）。コントラスト比 4.5 以上を目安にする
+// 色は style.css で付ける。TinyMCE のダイアログの中では、詳細度の低い指定が打ち消されるため
 const highlight = HighlightStyle.define([
-    { tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword], color: '#8a1c9a' },
-    { tag: [t.tagName, t.angleBracket], color: '#1a6b2c' },
-    { tag: [t.attributeName], color: '#8a5200' },
-    { tag: [t.string, t.attributeValue, t.special(t.string)], color: '#a31515' },
-    { tag: [t.number, t.bool, t.null, t.atom], color: '#0b6e8a' },
-    { tag: [t.comment, t.docComment], color: '#62707c', fontStyle: 'italic' },
-    { tag: [t.function(t.variableName), t.function(t.propertyName)], color: '#6b4f00' },
-    { tag: [t.definition(t.variableName), t.variableName], color: '#0b3d91' },
-    { tag: [t.className, t.typeName, t.namespace], color: '#0b6e5a' },
-    { tag: [t.propertyName], color: '#0b4f8a' },
-    { tag: [t.meta, t.processingInstruction], color: '#7a3e9d' },
-    { tag: [t.heading], fontWeight: 'bold' },
-    { tag: [t.link, t.url], color: '#0b4f8a', textDecoration: 'underline' },
-    { tag: t.invalid, color: '#b00020' }
+    { tag: [t.keyword, t.modifier, t.operatorKeyword, t.controlKeyword], class: 'evo-hl-keyword' },
+    { tag: [t.tagName, t.angleBracket], class: 'evo-hl-tag' },
+    { tag: [t.attributeName], class: 'evo-hl-attr' },
+    { tag: [t.string, t.attributeValue, t.special(t.string)], class: 'evo-hl-string' },
+    { tag: [t.number, t.bool, t.null, t.atom], class: 'evo-hl-number' },
+    { tag: [t.comment, t.docComment], class: 'evo-hl-comment' },
+    { tag: [t.function(t.variableName), t.function(t.propertyName)], class: 'evo-hl-function' },
+    { tag: [t.definition(t.variableName), t.variableName], class: 'evo-hl-variable' },
+    { tag: [t.className, t.typeName, t.namespace], class: 'evo-hl-type' },
+    { tag: [t.propertyName], class: 'evo-hl-property' },
+    { tag: [t.meta, t.processingInstruction], class: 'evo-hl-meta' },
+    { tag: [t.heading], class: 'evo-hl-heading' },
+    { tag: [t.link, t.url], class: 'evo-hl-link' },
+    { tag: t.invalid, class: 'evo-hl-invalid' }
 ]);
 
 // 検索の欄は編集のフォーム（#mutate）の中に出る。保存の値やプレビューの比べに混ざらないよう名前を外し、

@@ -1,5 +1,6 @@
 import { Compartment, EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { searchPanelOpen } from '@codemirror/search';
 import { baseExtensions } from './setup.js';
 import { languageFor } from './languages.js';
 
@@ -176,6 +177,20 @@ export class Bridge {
                 if (this.pendingInput && this.view) this.emitInput();
             }, 0);
         });
+        // TinyMCE のダイアログは Enter で確定、Tab で次の部品へ移り、Escape を離したときに閉じる。
+        // 閉じるための Escape だけを外へ出す（検索を閉じる・選択を解く・変換を取り消す Escape は出さない）
+        if (this.o.trapKeys) {
+            let consumed = false;
+            on(this.wrapper, 'keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                const { selection } = this.view.state;
+                consumed = e.isComposing || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty;
+            }, true);
+            ['keydown', 'keyup', 'keypress'].forEach((type) => on(this.wrapper, type, (e) => {
+                if (e.key !== 'Escape' || consumed) e.stopPropagation();
+                if (e.key === 'Escape' && type === 'keyup') consumed = false;
+            }));
+        }
         // ManagerManager の mm_synch_fields は textarea の keyup を聞く
         on(this.view.contentDOM, 'keyup', (e) => {
             if (!e.isComposing && !this.suspended) this.ta.dispatchEvent(new KeyboardEvent('keyup', { key: e.key }));
