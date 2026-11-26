@@ -1,6 +1,6 @@
 {
   "name": "evo-code-editor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Code editor (CodeMirror 6) for the Evolution CMS JP manager",
   "license": "GPL-2.0-or-later",
@@ -12,6 +12,7 @@
     "esbuild": "0.28.2"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "6.20.4",
     "@codemirror/commands": "6.11.1",
     "@codemirror/lang-css": "6.3.1",
     "@codemirror/lang-html": "6.4.12",

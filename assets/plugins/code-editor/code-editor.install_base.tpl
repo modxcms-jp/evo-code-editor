@@ -5,7 +5,7 @@
  * コード欄の色分け（CodeMirror 6）。エレメント・ファイル・リッチテキストを使わない本文
  *
  * @category    plugin
- * @version     0.2.0
+ * @version     0.3.0
  * @license     http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnManagerMainFrameHeaderHTMLBlock
  * @internal    @modx_category Manager and Admin

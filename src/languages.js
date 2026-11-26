@@ -7,6 +7,7 @@ import { xml } from '@codemirror/lang-xml';
 import { sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { modxTags } from './modxTags.js';
+import { completion } from './completion.js';
 
 const startsWithTag = (text) => /^\s*<\?/.test(text);
 
@@ -36,16 +37,22 @@ const BY_EXT = {
     scss: () => [css()], less: () => [css()]
 };
 
+// 打つたびに補完の一覧を出すもの（ほかは Ctrl+Space で出す）。書き手が候補から選ぶことの多い、タグやプロパティの言語
+const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', 'less', 'xml', 'svg', 'rss', 'md', 'markdown']);
+
 /**
  * @param {'php'|'html'|'file'} kind
  * @param {string} text 今の中身
  * @param {string} fileName kind が file のとき
+ * @param {object} names 補完に使う名前（チャンク・スニペット・テンプレート変数・設定）
  */
-export function languageFor(kind, text, fileName) {
+export function languageFor(kind, text, fileName, names) {
+    // スニペット・プラグインなどの PHP には、補完の元が無い
     if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return htmlCode(text);
-    const ext = (/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1];
-    const make = ext ? BY_EXT[ext.toLowerCase()] : null;
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
+    const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない
-    return make ? make(text) : [];
+    if (!make) return [];
+    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
 }

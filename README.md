@@ -1,9 +1,10 @@
 # Code Editor（evo-code-editor）
 
-Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 のエディタにするプラグイン（0.2.0）。
+Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 のエディタにするプラグイン（0.3.0）。
 本体（`manager/`）は変えない。
 
 - 色分け（PHP・HTML・CSS・JavaScript・JSON・XML・SQL・Markdown と、ソースタグ）、行番号、折りたたみ、対応する括弧、検索と置換（Ctrl+F）、Tab での字下げ
+- 補完。`{{` でチャンク、`[[`・`[!` でスニペット、`[*` で文書の項目とテンプレート変数、`[(` で設定のキーの名前を出し、選ぶと閉じの記号まで入れる。HTML のタグ・属性と CSS のプロパティも出す。JS・PHP などは Ctrl+Space で出す（改行の Enter が候補に取られないように）。名前は、見る権限のあるエレメントのものだけ
 - 欄の上のボタンで、素の欄との切り替え（人ごとにブラウザで記憶）
 - キーボードだけで欄の外へ出るには、Esc のあとに Tab（ファイルの編集と TinyMCE のソースのダイアログは Esc で閉じるので、Ctrl+M のあとに Tab）
 
@@ -28,7 +29,7 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 元の `textarea` を正とし、見た目だけを替える。入力は `textarea` に書いて `input`・`change`・`blur` を伝え、`textarea.value` への代入はエディタに映す。開いただけでは値を書かない。エディタを作れなければ、元の `textarea` のまま使える。
 
 - `src/index.js` 付け外し・切り替え ／ `targets.js` 対象の判定 ／ `bridge.js` `textarea` との橋渡し
-- `src/setup.js` エディタの設定 ／ `languages.js`・`modxTags.js` 色分け ／ `style.css`
+- `src/setup.js` エディタの設定 ／ `languages.js`・`modxTags.js` 色分け ／ `completion.js` 補完 ／ `style.css`
 
 組み立ては `npm ci && npm run build`。出力（`assets/plugins/code-editor/dist/`）もリポジトリに入れる。
 同梱の CodeMirror 6 は MIT ライセンス（`assets/plugins/code-editor/LICENSE-codemirror.txt`）。
