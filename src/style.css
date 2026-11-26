@@ -34,7 +34,7 @@ textarea.evo-ce-source {
 }
 
 .evo-ce .cm-scroller {
-    font-family: Consolas, 'Courier New', Courier, 'MS Gothic', monospace;
+    font-family: Consolas, Menlo, Monaco, monospace;
     line-height: 1.5;
 }
 
