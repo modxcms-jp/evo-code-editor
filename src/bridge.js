@@ -56,7 +56,7 @@ export class Bridge {
         const fileName = this.o.fileName ? this.o.fileName() : '';
         let language = [];
         try {
-            language = languageFor(this.o.kind, text, fileName, this.o.names);
+            language = languageFor(this.o.kind, text, fileName, { names: this.o.names, lang: this.o.lang });
         } catch (e) {
             console.warn('[evo-code-editor]', e);
         }

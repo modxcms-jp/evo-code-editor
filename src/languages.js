@@ -8,6 +8,7 @@ import { sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { modxTags } from './modxTags.js';
 import { completion } from './completion.js';
+import { tagLint } from './tagLint.js';
 
 const startsWithTag = (text) => /^\s*<\?/.test(text);
 
@@ -44,15 +45,17 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
  * @param {'php'|'html'|'file'} kind
  * @param {string} text 今の中身
  * @param {string} fileName kind が file のとき
- * @param {object} names 補完に使う名前（チャンク・スニペット・テンプレート変数・設定）
+ * @param {object} o { names: 補完と検査に使う名前（チャンク・スニペット・テンプレート変数・設定）, lang }
  */
-export function languageFor(kind, text, fileName, names) {
+export function languageFor(kind, text, fileName, o = {}) {
+    const { names } = o;
     // スニペット・プラグインなどの PHP には、補完の元が無い
     if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names }), tagLint(o)];
     const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない
     if (!make) return [];
-    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
+    const tags = make === htmlCode;
+    return [make(text), completion({ typing: TYPING.has(ext), tags, names }), tags ? tagLint(o) : []];
 }
