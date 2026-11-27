@@ -3,7 +3,7 @@
  * Code Editor の入口。プラグイン（OnManagerMainFrameHeaderHTMLBlock）から読み込む。
  * 管理画面の <head> に、設定と自前の JS・CSS を出すだけ。画面の差し替え（シェルの断片）では呼ばれない。
  */
-if (!isset($modx) || $modx->event->name !== 'OnManagerMainFrameHeaderHTMLBlock') {
+if (!function_exists('evo') || evo()->event->name !== 'OnManagerMainFrameHeaderHTMLBlock') {
     return;
 }
 
@@ -19,13 +19,13 @@ if ($js === '') {
 }
 
 // 補完に使う名前と、説明の先頭。見る権限のあるエレメントだけを渡す
-$codeEditorNames = function ($table, $nameField, $detailField, $permission) use ($modx) {
-    if (!$modx->hasPermission($permission)) {
+$codeEditorNames = function ($table, $nameField, $detailField, $permission) {
+    if (!evo()->hasPermission($permission)) {
         return [];
     }
-    $rs = $modx->db->select("{$nameField} AS name, {$detailField} AS detail", "[+prefix+]{$table}", '', $nameField, 2000);
+    $rs = db()->select("{$nameField} AS name, {$detailField} AS detail", "[+prefix+]{$table}", '', $nameField, 2000);
     $names = [];
-    while ($row = $modx->db->getRow($rs)) {
+    while ($row = db()->getRow($rs)) {
         $names[] = [(string) $row['name'], mb_substr(trim(strip_tags((string) $row['detail'])), 0, 60)];
     }
     return $names;
@@ -38,7 +38,7 @@ if ($codeEditorSettings) {
     }
 }
 
-$modx->event->output(implode("\n", array_filter([
+evo()->event->output(implode("\n", array_filter([
     '<script>window.evoCodeEditorConfig=' . json_encode([
         'useEditor' => (string) config('use_editor') === '1',
         'lang' => strpos((string) config('manager_language', 'english'), 'japanese') === 0 ? 'ja' : 'en',
