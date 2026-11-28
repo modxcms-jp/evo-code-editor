@@ -199,7 +199,8 @@ export class Bridge {
             on(this.wrapper, 'keydown', (e) => {
                 if (e.key !== 'Escape') return;
                 const { selection } = this.view.state;
-                consumed = e.isComposing || completionStatus(this.view.state) !== null || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty;
+                // Emmet の追跡（下線）を取り消す Escape も外へ出さない
+                consumed = e.isComposing || completionStatus(this.view.state) !== null || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty || !!this.view.dom.querySelector('.emmet-tracker');
             }, true);
             ['keydown', 'keyup', 'keypress'].forEach((type) => on(this.wrapper, type, (e) => {
                 if (e.key !== 'Escape' || consumed) e.stopPropagation();
