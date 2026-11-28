@@ -47,11 +47,12 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
  * @param {string} text 今の中身
  * @param {string} fileName kind が file のとき
  * @param {object} names 補完に使う名前（チャンク・スニペット・テンプレート変数・設定）
+ * @param {object|null} bindings バインディングを補完するなら { lang, filesUrl }
  */
-export function languageFor(kind, text, fileName, names) {
+export function languageFor(kind, text, fileName, names, bindings) {
     // スニペット・プラグインなどの PHP。Evolution の API と単語は Ctrl+Space で出す
     if (kind === 'php') return [phpCode(text), completion({ typing: false, php: true, words: true })];
-    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names, words: true })];
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names, bindings, words: true })];
     const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない

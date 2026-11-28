@@ -1,6 +1,7 @@
 import { EditorState } from '@codemirror/state';
 import { autocompletion, pickedCompletion } from '@codemirror/autocomplete';
 import { codeSources } from './phpCompletion.js';
+import { bindingSources } from './bindings.js';
 
 // 補完。一覧を打つたびに出すのは、HTML・CSS などの書き手が候補から選ぶことの多いものだけ。
 // JS・PHP などは、改行の Enter が候補に取られないよう、Ctrl+Space で出したときだけにする
@@ -79,14 +80,19 @@ function tagSource(names) {
  * @param {object} o {
  *   typing: 打つたびに一覧を出すか, tags: Evolution のタグを補完するか, names: サーバーから受け取った名前,
  *   php: Evolution の API（$modx-> など）を補完するか, words: 文書の中の単語を Ctrl+Space で出すか
+ *   bindings: バインディングを補完するなら { lang, filesUrl }
  * }
  */
 export function completion(o) {
     // 補完の元は 1 つだけ作る（CodeMirror は関数そのもので元を見分けるので、読むたびに作ると結果が捨てられる）
-    const sources = [...(o.tags ? [tagSource(o.names || {})] : []), ...codeSources(o)];
+    const sources = [
+        ...(o.tags ? [tagSource(o.names || {})] : []),
+        ...(o.bindings ? bindingSources(o.bindings) : []),
+        ...codeSources(o)
+    ];
     const data = sources.length ? sources.map((autocomplete) => ({ autocomplete })) : null;
     return [
-        autocompletion({ activateOnTyping: o.typing, maxRenderedOptions: 200 }),
+        autocompletion({ activateOnTyping: o.typing, activateOnCompletion: (c) => c.reopen === true, maxRenderedOptions: 200 }),
         data ? EditorState.languageData.of(() => data) : []
     ];
 }

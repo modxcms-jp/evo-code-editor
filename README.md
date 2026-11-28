@@ -5,6 +5,7 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 
 - 色分け（PHP・HTML・CSS・JavaScript・JSON・XML・SQL・Markdown と、ソースタグ）、行番号、折りたたみ、対応する括弧、検索と置換（Ctrl+F）、Tab での字下げ
 - 補完。`{{` でチャンク、`[[`・`[!` でスニペット、`[*` で文書の項目とテンプレート変数、`[(` で設定のキーの名前を出し、選ぶと閉じの記号まで入れる。HTML のタグ・属性と CSS のプロパティも出す。JS・PHP などは Ctrl+Space で出す（改行の Enter が候補に取られないように）。名前は、見る権限のあるエレメントのものだけ
+- バインディングの補完。テンプレート・チャンク・本文の先頭で `@` を打つと `@FILE`・`@INCLUDE`・`@URL` を出し、`@FILE:`・`@INCLUDE:` のあとはサイトの直下からのファイルとディレクトリの名前を出す（`@FILE` は PHP 以外、`@INCLUDE` は PHP だけ）。`manager/`・ドットで始まる場所など、コアの `@FILE` が読まない場所は出さない
 - PHP（スニペット・プラグイン・モジュールと、PHP のファイル）では、Ctrl+Space で Evolution の API を出す。`$modx->`・`evo()->` のあとは DocumentParser のメソッド、`db()->`・`$modx->db->` のあとは DBAPI のメソッド、ほかは `helpers.php` の関数。文字列・コメントの中では出さない
 - 文書の中の単語（変数名など）は、どの欄でも Ctrl+Space で出す
 - 欄の上のボタンで、素の欄との切り替え（人ごとにブラウザで記憶）
@@ -25,6 +26,8 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 
 1. `assets/plugins/code-editor/` をサイトに置く
 2. サイトの直下で `php install.php`。やめるときは `php install.php --disable`
+
+前の版から上げるときも `php install.php` を流す（バインディングの補完に使う `OnManagerPageInit` を登録する）。
 
 ## 作り
 
