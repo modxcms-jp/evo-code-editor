@@ -251,3 +251,9 @@ textarea.evo-ce-source {
     font-style: normal;
     color: #666;
 }
+
+/* 選んでいる行は背景が青いので、灰色では読めない。行の文字の色（白）を少し薄くして使う */
+.evo-ce .cm-tooltip-autocomplete li[aria-selected] .cm-completionDetail {
+    color: inherit;
+    opacity: 0.85;
+}

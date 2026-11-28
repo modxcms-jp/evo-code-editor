@@ -1,5 +1,6 @@
 import { EditorState } from '@codemirror/state';
 import { autocompletion, pickedCompletion } from '@codemirror/autocomplete';
+import { codeSources } from './phpCompletion.js';
 import { bindingSources } from './bindings.js';
 
 // 補完。一覧を打つたびに出すのは、HTML・CSS などの書き手が候補から選ぶことの多いものだけ。
@@ -78,6 +79,7 @@ function tagSource(names) {
 /**
  * @param {object} o {
  *   typing: 打つたびに一覧を出すか, tags: Evolution のタグを補完するか, names: サーバーから受け取った名前,
+ *   php: Evolution の API（$modx-> など）を補完するか, words: 文書の中の単語を Ctrl+Space で出すか
  *   bindings: バインディングを補完するなら { lang, filesUrl }
  * }
  */
@@ -85,7 +87,8 @@ export function completion(o) {
     // 補完の元は 1 つだけ作る（CodeMirror は関数そのもので元を見分けるので、読むたびに作ると結果が捨てられる）
     const sources = [
         ...(o.tags ? [tagSource(o.names || {})] : []),
-        ...(o.bindings ? bindingSources(o.bindings) : [])
+        ...(o.bindings ? bindingSources(o.bindings) : []),
+        ...codeSources(o)
     ];
     const data = sources.length ? sources.map((autocomplete) => ({ autocomplete })) : null;
     return [
