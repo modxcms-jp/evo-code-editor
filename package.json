@@ -1,6 +1,6 @@
 {
   "name": "evo-code-editor",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Code editor (CodeMirror 6) for the Evolution CMS JP manager",
   "license": "GPL-2.0-or-later",

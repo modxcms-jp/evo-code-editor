@@ -40,7 +40,7 @@ foreach ($events as $event) {
     }
 }
 $fields = [
-    'description' => $modx->db->escape('<strong>0.3.0</strong> コード欄の色分け（CodeMirror 6）'),
+    'description' => $modx->db->escape('<strong>0.4.0</strong> コード欄の色分け・補完・Emmet（CodeMirror 6）'),
     'plugincode' => $modx->db->escape("\$f = MODX_BASE_PATH . 'assets/plugins/code-editor/plugin.php';\nif (is_file(\$f)) {\n    include \$f;\n}"),
     'disabled' => 0,
 ];
