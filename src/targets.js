@@ -22,6 +22,11 @@ function richTextOff(ta, config) {
     return !hasRichEditor(ta);
 }
 
+function isChunk(ta) {
+    const a = ta.form && ta.form.elements.namedItem('a');
+    return !!a && 'value' in a && String(a.value) === '79';
+}
+
 function elementKind(ta) {
     const a = ta.form && ta.form.elements.namedItem('a');
     // 保存の処理の番号: 20 テンプレート / 79 チャンク / 24 スニペット / 103 プラグイン / 109 モジュール
@@ -46,7 +51,8 @@ export function describe(ta, config) {
     // エレメントのコード
     if (ta.matches('.code-editor textarea.phptextarea')) {
         if (!richTextOff(ta, config)) return null;
-        return { kind: elementKind(ta), label: titleOf(ta) };
+        // チャンクは HTML とは限らない（ManagerManager の規則など）ので、Emmet は選んだときだけ
+        return { kind: elementKind(ta), label: titleOf(ta), emmetOptional: isChunk(ta) };
     }
     // 投稿・下書きの本文
     if (ta.id === 'ta' && ta.name === 'ta') {

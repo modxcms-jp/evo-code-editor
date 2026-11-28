@@ -176,6 +176,10 @@ textarea.evo-ce-source {
     margin-left: 12px;
 }
 
+.code-editor-header > .evo-ce-emmet-toggle + .evo-ce-toggle {
+    margin-left: 6px;
+}
+
 .evo-ce-toggle {
     width: auto;
     min-width: 0;

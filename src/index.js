@@ -3,9 +3,11 @@ import { describe, SELECTOR } from './targets.js';
 
 const config = Object.assign({ useEditor: true, lang: 'ja' }, window.evoCodeEditorConfig);
 const KEY = 'evoCodeEditor';
+// チャンクで Emmet を使うか（既定は使わない。チャンクは HTML とは限らないため）
+const EMMET_KEY = 'evoCodeEditorEmmetChunk';
 const TEXT = config.lang === 'ja'
-    ? { on: '色分けを使う', off: '素の欄に戻す' }
-    : { on: 'Use code editor', off: 'Use plain text' };
+    ? { on: '色分けを使う', off: '素の欄に戻す', emmetOn: 'Emmet を使う', emmetOff: 'Emmet を使わない' }
+    : { on: 'Use code editor', off: 'Use plain text', emmetOn: 'Use Emmet', emmetOff: 'Disable Emmet' };
 
 const bridges = new Set();
 const byArea = new WeakMap();
@@ -30,16 +32,54 @@ function setEnabled(on) {
     } catch (e) { /* 覚えられないときは、この画面の間だけ */ }
 }
 
+function emmetOn() {
+    try {
+        return localStorage.getItem(EMMET_KEY) === 'on';
+    } catch (e) {
+        return window.__evoCodeEditorEmmet === true;
+    }
+}
+
+function setEmmetOn(on) {
+    window.__evoCodeEditorEmmet = on;
+    try {
+        localStorage.setItem(EMMET_KEY, on ? 'on' : 'off');
+    } catch (e) { /* 覚えられないときは、この画面の間だけ */ }
+}
+
+// Emmet を選べる欄（チャンク）のボタン。素の欄のときは隠す
+function addEmmetToggle(ta, toggle) {
+    if (ta.dataset.ceEmmetToggle) return;
+    ta.dataset.ceEmmetToggle = '1';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'evo-ce-toggle evo-ce-emmet-toggle';
+    button.addEventListener('click', () => {
+        setEmmetOn(!emmetOn());
+        bridges.forEach((b) => b.o.emmetOptional && b.refreshEmmet());
+        document.querySelectorAll('.evo-ce-emmet-toggle').forEach(labelEmmet);
+    });
+    labelEmmet(button);
+    toggle.before(button);
+}
+
+function labelEmmet(button) {
+    button.textContent = emmetOn() ? TEXT.emmetOff : TEXT.emmetOn;
+    button.hidden = !enabled();
+}
+
 function addToggle(ta) {
-    if (ta.dataset.ceToggle) return;
+    if (ta.dataset.ceToggle) return ta.__evoCeToggle;
     ta.dataset.ceToggle = '1';
     const button = document.createElement('button');
+    ta.__evoCeToggle = button;
     button.type = 'button';
     button.className = 'evo-ce-toggle';
     button.addEventListener('click', () => {
         setEnabled(!enabled());
         enabled() ? scan() : bridges.forEach(detach);
-        document.querySelectorAll('.evo-ce-toggle').forEach(label);
+        document.querySelectorAll('.evo-ce-toggle:not(.evo-ce-emmet-toggle)').forEach(label);
+        document.querySelectorAll('.evo-ce-emmet-toggle').forEach(labelEmmet);
     });
     label(button);
     const box = ta.closest('.code-editor');
@@ -53,6 +93,7 @@ function addToggle(ta) {
         row.appendChild(button);
         ta.before(row);
     }
+    return button;
 }
 
 function label(button) {
@@ -67,11 +108,12 @@ function attach(ta, given) {
         return;
     }
     if (given) sourceAreas.set(ta, given);
-    addToggle(ta);
+    const toggle = addToggle(ta);
+    if (target.emmetOptional && toggle) addEmmetToggle(ta, toggle);
     if (!enabled()) return;
     let bridge = null;
     try {
-        bridge = new Bridge(ta, Object.assign({ lang: config.lang, names: config.names }, target));
+        bridge = new Bridge(ta, Object.assign({ lang: config.lang, names: config.names, emmetOn }, target));
     } catch (e) {
         // 替えられなければ、元の textarea のまま使えるようにする
         console.error('[evo-code-editor]', e);

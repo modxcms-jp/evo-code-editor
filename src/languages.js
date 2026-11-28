@@ -8,8 +8,8 @@ import { sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { modxTags } from './modxTags.js';
 import { completion } from './completion.js';
-import { emmet } from './emmet.js';
 
+const extOf = (fileName) => ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
 const startsWithTag = (text) => /^\s*<\?/.test(text);
 
 // タグは自動で閉じない（手で閉じると二重になる）。php() は、素のままだと自動で閉じる HTML を含む
@@ -52,10 +52,21 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
 export function languageFor(kind, text, fileName, names) {
     // スニペット・プラグインなどの PHP には、補完の元が無い
     if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return [htmlCode(text), emmet('html'), completion({ typing: true, tags: true, names })];
-    const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    const ext = extOf(fileName);
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない
     if (!make) return [];
-    return [make(text), EMMET[ext] ? emmet(EMMET[ext]) : [], completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
+    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
+}
+
+/**
+ * Emmet の書き方。使わない欄・ファイルなら null
+ * @param {'php'|'html'|'file'} kind
+ * @param {string} fileName kind が file のとき
+ */
+export function emmetSyntax(kind, fileName) {
+    if (kind === 'html') return 'html';
+    if (kind !== 'file') return null;
+    return EMMET[extOf(fileName)] || null;
 }
