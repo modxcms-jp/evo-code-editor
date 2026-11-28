@@ -15,9 +15,20 @@ const NAME_BEFORE = /^@[A-Za-z]*$/;
 const VALUE_BEFORE = /^@(FILE|INCLUDE)[: ][ \t]*(.*)$/;
 const SEGMENT = /^[^/\s]*/;
 
+// 名前を入れる。名前の途中で選んだときは、後ろに続く名前の残りも置き換える（区切りと値はそのまま）
+function applyName(view, completion, from, to) {
+    const end = to + /^[A-Za-z]*/.exec(view.state.doc.sliceString(to, view.state.doc.lineAt(to).to))[0].length;
+    view.dispatch({
+        changes: { from, to: end, insert: completion.label },
+        selection: { anchor: from + completion.label.length },
+        annotations: pickedCompletion.of(completion),
+        userEvent: 'input.complete'
+    });
+}
+
 function nameSource(lang) {
     const detail = DETAIL[lang] || DETAIL.en;
-    const options = Object.keys(detail).map((name) => ({ label: '@' + name, detail: detail[name], type: 'keyword' }));
+    const options = Object.keys(detail).map((name) => ({ label: '@' + name, detail: detail[name], type: 'keyword', apply: applyName }));
     return (context) => {
         const m = context.matchBefore(NAME_BEFORE);
         if (!m || m.from !== 0) return null;
