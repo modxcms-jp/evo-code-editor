@@ -10,6 +10,8 @@ const MEMBER = /(\$modx|\bevo\(\)|\bdb\(\))\s*->\s*(db\s*->\s*)?(\w*)$/;
 // 関数の名前。前が $（変数）・->・::（メンバー）なら関数ではない
 const FUNCTION_BEFORE = /(^|[^\w$>:])([A-Za-z_]\w*)$/;
 const IDENT = /^\w*$/;
+// 後ろに続く名前の残り（後ろに ( や ; が続いてもよい）
+const IDENT_REST = /^\w*/;
 
 // PHP のコードの中か。文字列・コメントの中と、PHP のファイルの HTML の部分（祖先に HTML の Document がある）は外す
 function inPhpCode(state, pos) {
@@ -24,7 +26,7 @@ function inPhpCode(state, pos) {
 function applyCall(view, completion, from, to) {
     const line = view.state.doc.lineAt(to);
     const rest = line.text.slice(to - line.from);
-    const end = to + IDENT.exec(rest)[0].length;
+    const end = to + IDENT_REST.exec(rest)[0].length;
     const hasParen = view.state.doc.sliceString(end, end + 1) === '(';
     const insert = completion.label + (hasParen ? '' : completion.detail === '()' ? '()' : '(');
     view.dispatch({
@@ -50,14 +52,13 @@ function memberMatch(context) {
 }
 
 function apiSource(context) {
-    if (!inPhpCode(context.state, context.pos)) return null;
+    // PHP は Ctrl+Space のときだけ（.phtml のように打つたびに出す欄でも、改行の Enter を候補に取られないように）
+    if (!context.explicit || !inPhpCode(context.state, context.pos)) return null;
     const m = memberMatch(context);
     if (m) {
         const options = m[2] || m[1] === 'db()' ? optionsFor('db', 'method') : optionsFor('modx', 'method');
         return { from: context.pos - m[3].length, options, validFor: IDENT };
     }
-    // 関数の一覧は、Ctrl+Space のときだけ
-    if (!context.explicit) return null;
     const f = context.matchBefore(FUNCTION_BEFORE);
     // 変数（$x）や、ほかのもののメンバー（$obj->x・Foo::x）の名前を打っている途中なら出さない
     if (!f && context.matchBefore(/[$\w]$/)) return null;
