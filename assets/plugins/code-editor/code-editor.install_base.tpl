@@ -7,7 +7,7 @@
  * @category    plugin
  * @version     0.3.0
  * @license     http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
- * @internal    @events OnManagerMainFrameHeaderHTMLBlock
+ * @internal    @events OnManagerMainFrameHeaderHTMLBlock,OnManagerPageInit
  * @internal    @modx_category Manager and Admin
  * @internal    @installset base
  */
