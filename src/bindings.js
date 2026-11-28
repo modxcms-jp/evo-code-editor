@@ -1,4 +1,4 @@
-import { pickedCompletion, startCompletion } from '@codemirror/autocomplete';
+import { pickedCompletion } from '@codemirror/autocomplete';
 
 // バインディング（@FILE など）の補完。Evolution がバインディングとして読むのは欄の先頭だけなので、
 // 1 行目の頭でだけ出す。テンプレート・チャンク・本文で効くのは @FILE・@INCLUDE・@URL（atBind()）
@@ -51,6 +51,7 @@ function lister(url) {
 }
 
 // 選んだ名前で、打ちかけのところ（次の / まで）を置き換える。ディレクトリなら、続けてその中の名前を出す
+// （reopen。startCompletion で開くと明示の呼び出しになり、HTML の補完が本文の中でタグを全部出して、名前が埋もれる）
 function applyEntry(isDir) {
     return (view, completion, from, to) => {
         const line = view.state.doc.lineAt(to);
@@ -65,7 +66,6 @@ function applyEntry(isDir) {
             annotations: pickedCompletion.of(completion),
             userEvent: 'input.complete'
         });
-        if (isDir) setTimeout(() => startCompletion(view), 0);
     };
 }
 
@@ -85,7 +85,7 @@ function valueSource(url) {
         const data = await list(FILE_MODE[m[1]], dir);
         if (context.aborted) return null;
         const options = [
-            ...data.dirs.map((name) => ({ label: name + '/', type: 'namespace', boost: 1, apply: applyEntry(true) })),
+            ...data.dirs.map((name) => ({ label: name + '/', type: 'namespace', boost: 1, reopen: true, apply: applyEntry(true) })),
             ...data.files.map((name) => ({ label: name, type: 'text', apply: applyEntry(false) }))
         ];
         if (!options.length) return null;

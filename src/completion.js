@@ -89,7 +89,7 @@ export function completion(o) {
     ];
     const data = sources.length ? sources.map((autocomplete) => ({ autocomplete })) : null;
     return [
-        autocompletion({ activateOnTyping: o.typing, maxRenderedOptions: 200 }),
+        autocompletion({ activateOnTyping: o.typing, activateOnCompletion: (c) => c.reopen === true, maxRenderedOptions: 200 }),
         data ? EditorState.languageData.of(() => data) : []
     ];
 }
