@@ -38,6 +38,8 @@ const BY_EXT = {
 };
 
 // 打つたびに補完の一覧を出すもの（ほかは Ctrl+Space で出す）。書き手が候補から選ぶことの多い、タグやプロパティの言語
+// Evolution の API を補完するファイル（PHP の中だけで出す）
+const PHP_EXT = new Set(['php', 'inc', 'phtml']);
 const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', 'less', 'xml', 'svg', 'rss', 'md', 'markdown']);
 
 /**
@@ -47,12 +49,12 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
  * @param {object} names 補完に使う名前（チャンク・スニペット・テンプレート変数・設定）
  */
 export function languageFor(kind, text, fileName, names) {
-    // スニペット・プラグインなどの PHP には、補完の元が無い
-    if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    // スニペット・プラグインなどの PHP。Evolution の API と単語は Ctrl+Space で出す
+    if (kind === 'php') return [phpCode(text), completion({ typing: false, php: true, words: true })];
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names, words: true })];
     const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない
     if (!make) return [];
-    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
+    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names, php: PHP_EXT.has(ext), words: true })];
 }
