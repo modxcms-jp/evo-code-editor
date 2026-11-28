@@ -3,7 +3,8 @@ import { EditorView } from '@codemirror/view';
 import { searchPanelOpen } from '@codemirror/search';
 import { completionStatus } from '@codemirror/autocomplete';
 import { baseExtensions } from './setup.js';
-import { languageFor } from './languages.js';
+import { languageFor, emmetSyntax } from './languages.js';
+import { emmet } from './emmet.js';
 
 // textarea を正とし、見た目だけを CodeMirror に替える。
 // - 入力は textarea の値へ書き、input を出す。本体・ほかのプラグインは、これまでどおり textarea だけを見ればよい
@@ -29,6 +30,7 @@ export class Bridge {
         this.focusValue = null;
         this.readOnly = new Compartment();
         this.wrap = new Compartment();
+        this.emmet = new Compartment();
         this.cleanup = [];
         this.mount();
     }
@@ -67,6 +69,7 @@ export class Bridge {
                 language,
                 this.readOnly.of(this.readOnlyExtension()),
                 this.wrap.of(this.wrapExtension()),
+                this.emmet.of(this.emmetExtension()),
                 EditorView.updateListener.of((u) => {
                     if (u.docChanged && !this.applying) this.changed();
                 })
@@ -77,6 +80,17 @@ export class Bridge {
     readOnlyExtension() {
         const locked = this.ta.readOnly || this.ta.disabled;
         return [EditorState.readOnly.of(locked), EditorView.editable.of(!this.ta.disabled)];
+    }
+
+    // Emmet。チャンクなど選べる欄では、選んだときだけ（o.emmetOn()）
+    emmetExtension() {
+        const syntax = emmetSyntax(this.o.kind, this.o.fileName ? this.o.fileName() : '');
+        if (!syntax || (this.o.emmetOptional && !(this.o.emmetOn && this.o.emmetOn()))) return [];
+        return emmet(syntax, this.o.lang);
+    }
+
+    refreshEmmet() {
+        this.view.dispatch({ effects: this.emmet.reconfigure(this.emmetExtension()) });
     }
 
     wrapExtension() {
@@ -185,7 +199,8 @@ export class Bridge {
             on(this.wrapper, 'keydown', (e) => {
                 if (e.key !== 'Escape') return;
                 const { selection } = this.view.state;
-                consumed = e.isComposing || completionStatus(this.view.state) !== null || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty;
+                // Emmet の追跡（下線）を取り消す Escape も外へ出さない
+                consumed = e.isComposing || completionStatus(this.view.state) !== null || searchPanelOpen(this.view.state) || selection.ranges.length > 1 || !selection.main.empty || !!this.view.dom.querySelector('.emmet-tracker');
             }, true);
             ['keydown', 'keyup', 'keypress'].forEach((type) => on(this.wrapper, type, (e) => {
                 if (e.key !== 'Escape' || consumed) e.stopPropagation();

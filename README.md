@@ -8,6 +8,9 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 - バインディングの補完。テンプレート・チャンク・本文の先頭で `@` を打つと `@FILE`・`@INCLUDE`・`@URL` を出し、`@FILE:`・`@INCLUDE:` のあとはサイトの直下からのファイルとディレクトリの名前を出す（`@FILE` は PHP 以外、`@INCLUDE` は PHP だけ）。`manager/`・ドットで始まる場所など、コアの `@FILE` が読まない場所は出さない
 - PHP（スニペット・プラグイン・モジュールと、PHP のファイル）では、Ctrl+Space で Evolution の API を出す。`$modx->`・`evo()->` のあとは DocumentParser のメソッド、`db()->`・`$modx->db->` のあとは DBAPI のメソッド、ほかは `helpers.php` の関数。文字列・コメントの中では出さない
 - 文書の中の単語（変数名など）は、どの欄でも Ctrl+Space で出す
+- Emmet。テンプレート・本文と、HTML・CSS（SCSS・LESS）のファイルで、`ul>li*3`・`m10` のような省略記法を打つと、下線を引いて展開の結果を下に見せ、Tab で展開する（下線の無いところの Tab は字下げ）。Esc で取り消す（候補の一覧が開いていれば 2 回）。英単語も省略記法として扱うので、`hello` を打った直後の Tab は `<hello></hello>` になる（字下げしたいときは Esc で取り消してから）。PHP の部分、Evolution のタグ、日本語の文には反応しない
+  - チャンクは HTML とは限らないので、既定では使わない。欄の上の「Emmet を使う」で切り替える（人ごとにブラウザで記憶）
+  - `!` で出す `<html lang="...">` は、管理画面の言語が日本語なら `ja`、ほかは `en`
 - 欄の上のボタンで、素の欄との切り替え（人ごとにブラウザで記憶）
 - キーボードだけで欄の外へ出るには、Esc のあとに Tab（ファイルの編集と TinyMCE のソースのダイアログは Esc で閉じるので、Ctrl+M のあとに Tab）
 
@@ -39,7 +42,7 @@ Evolution CMS JP Edition 1.3 の管理画面のコード欄を、CodeMirror 6 �
 Evolution の API の一覧（`src/evoApi.json`）は、本体の版が上がったら、サイトの直下で `php <このリポジトリ>/tools/evo-api.php > <このリポジトリ>/src/evoApi.json` で作り直す。
 
 組み立ては `npm ci && npm run build`。出力（`assets/plugins/code-editor/dist/`）もリポジトリに入れる。
-同梱の CodeMirror 6 は MIT ライセンス（`assets/plugins/code-editor/LICENSE-codemirror.txt`）。
+同梱の CodeMirror 6 と Emmet は MIT ライセンス（`assets/plugins/code-editor/LICENSE-codemirror.txt`・`LICENSE-emmet.txt`）。
 
 ## ライセンス
 
