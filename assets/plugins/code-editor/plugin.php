@@ -4,33 +4,33 @@
  * - OnManagerMainFrameHeaderHTMLBlock: 管理画面の <head> に、設定と自前の JS・CSS を出す。画面の差し替え（シェルの断片）では呼ばれない
  * - OnManagerPageInit: バインディング（@FILE・@INCLUDE）の補完に、ディレクトリの中の名前を JSON で返す
  */
-if (!isset($modx)) {
+if (!function_exists('evo')) {
     return;
 }
-if ($modx->event->name === 'OnManagerPageInit') {
+if (evo()->event->name === 'OnManagerPageInit') {
     if (!isset($_GET['evo_code_editor']) || $_GET['evo_code_editor'] !== 'files') {
         return;
     }
-    $codeEditorFiles = function ($rel, $mode) use ($modx) {
+    $codeEditorFiles = function ($rel, $mode) {
         $empty = ['dirs' => [], 'files' => []];
-        if (!($modx->hasPermission('edit_document') || $modx->hasPermission('edit_template') || $modx->hasPermission('edit_chunk'))) {
+        if (!(evo()->hasPermission('edit_document') || evo()->hasPermission('edit_template') || evo()->hasPermission('edit_chunk'))) {
             return $empty;
         }
         // 場所の判定はコアの @FILE と同じもの（サイトの直下だけ・manager/ とドットで始まる場所・読ませない場所を除く）を使う
-        if (!method_exists($modx, 'resolveBindDirPath')) {
+        if (!method_exists(evo(), 'resolveBindDirPath')) {
             return $empty;
         }
         $rel = trim(str_replace('\\', '/', (string) $rel), '/');
         if (strpos($rel, "\0") !== false) {
             return $empty;
         }
-        $dir = $modx->resolveBindDirPath(MODX_BASE_PATH . $rel);
+        $dir = evo()->resolveBindDirPath(MODX_BASE_PATH . $rel);
         if ($dir === false) {
             return $empty;
         }
         $base = rtrim(str_replace('\\', '/', (string) realpath(MODX_BASE_PATH)), '/') . '/';
         $manager = realpath(MODX_MANAGER_PATH);
-        $deny = method_exists($modx, 'getBindDenyDirs') ? $modx->getBindDenyDirs() : [];
+        $deny = method_exists(evo(), 'getBindDenyDirs') ? evo()->getBindDenyDirs() : [];
         if ($manager !== false) {
             $deny[] = strtolower(rtrim(str_replace('\\', '/', $manager), '/')) . '/';
         }
@@ -92,7 +92,7 @@ if ($modx->event->name === 'OnManagerPageInit') {
     );
     exit;
 }
-if ($modx->event->name !== 'OnManagerMainFrameHeaderHTMLBlock') {
+if (evo()->event->name !== 'OnManagerMainFrameHeaderHTMLBlock') {
     return;
 }
 
@@ -108,13 +108,13 @@ if ($js === '') {
 }
 
 // 補完に使う名前と、説明の先頭。見る権限のあるエレメントだけを渡す
-$codeEditorNames = function ($table, $nameField, $detailField, $permission) use ($modx) {
-    if (!$modx->hasPermission($permission)) {
+$codeEditorNames = function ($table, $nameField, $detailField, $permission) {
+    if (!evo()->hasPermission($permission)) {
         return [];
     }
-    $rs = $modx->db->select("{$nameField} AS name, {$detailField} AS detail", "[+prefix+]{$table}", '', $nameField, 2000);
+    $rs = db()->select("{$nameField} AS name, {$detailField} AS detail", "[+prefix+]{$table}", '', $nameField, 2000);
     $names = [];
-    while ($row = $modx->db->getRow($rs)) {
+    while ($row = db()->getRow($rs)) {
         $names[] = [(string) $row['name'], mb_substr(trim(strip_tags((string) $row['detail'])), 0, 60)];
     }
     return $names;
@@ -127,12 +127,12 @@ if ($codeEditorSettings) {
     }
 }
 
-$modx->event->output(implode("\n", array_filter([
+evo()->event->output(implode("\n", array_filter([
     '<script>window.evoCodeEditorConfig=' . json_encode([
         'useEditor' => (string) config('use_editor') === '1',
         'lang' => strpos((string) config('manager_language', 'english'), 'japanese') === 0 ? 'ja' : 'en',
         // バインディングの値の補完に使う一覧の口。プラグインが OnManagerPageInit にも登録されているときだけ
-        'filesUrl' => in_array($modx->event->activePlugin, isset($modx->pluginEvent['OnManagerPageInit']) ? (array) $modx->pluginEvent['OnManagerPageInit'] : [], true)
+        'filesUrl' => in_array(evo()->event->activePlugin, isset(evo()->pluginEvent['OnManagerPageInit']) ? (array) evo()->pluginEvent['OnManagerPageInit'] : [], true)
             ? MODX_MANAGER_URL . 'index.php?a=999&evo_code_editor=files'
             : '',
         'names' => [
