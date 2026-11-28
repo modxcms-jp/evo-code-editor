@@ -15,7 +15,8 @@ include getcwd() . '/index.php';
 $modx->db->connect();
 
 $name = 'Code Editor';
-$event = 'OnManagerMainFrameHeaderHTMLBlock';
+// <head> への出力と、バインディングの補完に使うファイルの一覧
+$events = ['OnManagerMainFrameHeaderHTMLBlock', 'OnManagerPageInit'];
 $id = (int) $modx->db->getValue($modx->db->select('id', '[+prefix+]site_plugins', "name='{$name}'"));
 
 if ($disable) {
@@ -30,10 +31,13 @@ if (!is_file(MODX_BASE_PATH . 'assets/plugins/code-editor/plugin.php')) {
     fwrite(STDERR, "assets/plugins/code-editor/plugin.php が無い\n");
     exit(1);
 }
-$evt = (int) $modx->db->getValue($modx->db->select('id', '[+prefix+]system_eventnames', "name='{$event}'"));
-if (!$evt) {
-    fwrite(STDERR, "{$event} の出来事が無い\n");
-    exit(1);
+$evts = [];
+foreach ($events as $event) {
+    $evts[$event] = (int) $modx->db->getValue($modx->db->select('id', '[+prefix+]system_eventnames', "name='{$event}'"));
+    if (!$evts[$event]) {
+        fwrite(STDERR, "{$event} の出来事が無い\n");
+        exit(1);
+    }
 }
 $fields = [
     'description' => $modx->db->escape('<strong>0.3.0</strong> コード欄の色分け（CodeMirror 6）'),
@@ -47,8 +51,10 @@ if ($id) {
     $fields['properties'] = '';
     $id = (int) $modx->db->insert($fields, '[+prefix+]site_plugins');
 }
-if (!(int) $modx->db->getValue($modx->db->select('COUNT(*)', '[+prefix+]site_plugin_events', "pluginid={$id} AND evtid={$evt}"))) {
-    $modx->db->insert(['pluginid' => $id, 'evtid' => $evt, 'priority' => 0], '[+prefix+]site_plugin_events');
+foreach ($evts as $evt) {
+    if (!(int) $modx->db->getValue($modx->db->select('COUNT(*)', '[+prefix+]site_plugin_events', "pluginid={$id} AND evtid={$evt}"))) {
+        $modx->db->insert(['pluginid' => $id, 'evtid' => $evt, 'priority' => 0], '[+prefix+]site_plugin_events');
+    }
 }
 $modx->clearCache('full');
 echo "plugin: id={$id} を登録し、キャッシュを消した\n";
