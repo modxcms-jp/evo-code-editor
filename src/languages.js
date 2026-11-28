@@ -48,11 +48,12 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
  * @param {string} text 今の中身
  * @param {string} fileName kind が file のとき
  * @param {object} names 補完に使う名前（チャンク・スニペット・テンプレート変数・設定）
+ * @param {object|null} bindings バインディングを補完するなら { lang, filesUrl }
  */
-export function languageFor(kind, text, fileName, names) {
+export function languageFor(kind, text, fileName, names, bindings) {
     // スニペット・プラグインなどの PHP には、補完の元が無い
     if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names, bindings })];
     const ext = extOf(fileName);
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない

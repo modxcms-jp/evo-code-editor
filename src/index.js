@@ -113,7 +113,7 @@ function attach(ta, given) {
     if (!enabled()) return;
     let bridge = null;
     try {
-        bridge = new Bridge(ta, Object.assign({ lang: config.lang, names: config.names, emmetOn }, target));
+        bridge = new Bridge(ta, Object.assign({ lang: config.lang, names: config.names, filesUrl: config.filesUrl || '', emmetOn }, target));
     } catch (e) {
         // 替えられなければ、元の textarea のまま使えるようにする
         console.error('[evo-code-editor]', e);

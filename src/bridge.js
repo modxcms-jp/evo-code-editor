@@ -18,7 +18,7 @@ const LAZY_LENGTH = 300000;
 export class Bridge {
     /**
      * @param {HTMLTextAreaElement} ta
-     * @param {object} o { kind, fileName(), label, lang, names, wrapperClass }
+     * @param {object} o { kind, fileName(), label, lang, names, bindings, filesUrl, wrapperClass }
      */
     constructor(ta, o) {
         this.ta = ta;
@@ -58,7 +58,7 @@ export class Bridge {
         const fileName = this.o.fileName ? this.o.fileName() : '';
         let language = [];
         try {
-            language = languageFor(this.o.kind, text, fileName, this.o.names);
+            language = languageFor(this.o.kind, text, fileName, this.o.names, this.o.bindings ? { lang: this.o.lang, filesUrl: this.o.filesUrl } : null);
         } catch (e) {
             console.warn('[evo-code-editor]', e);
         }

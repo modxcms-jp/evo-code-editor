@@ -51,13 +51,14 @@ export function describe(ta, config) {
     // エレメントのコード
     if (ta.matches('.code-editor textarea.phptextarea')) {
         if (!richTextOff(ta, config)) return null;
+        const kind = elementKind(ta);
         // チャンクは HTML とは限らない（ManagerManager の規則など）ので、Emmet は選んだときだけ
-        return { kind: elementKind(ta), label: titleOf(ta), emmetOptional: isChunk(ta) };
+        return { kind, label: titleOf(ta), bindings: kind === 'html', emmetOptional: isChunk(ta) };
     }
     // 投稿・下書きの本文
     if (ta.id === 'ta' && ta.name === 'ta') {
         if (!richTextOff(ta, config)) return null;
-        return { kind: 'html', label: 'content' };
+        return { kind: 'html', label: 'content', bindings: true };
     }
     return null;
 }
