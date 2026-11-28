@@ -8,6 +8,7 @@ import { sql } from '@codemirror/lang-sql';
 import { markdown } from '@codemirror/lang-markdown';
 import { modxTags } from './modxTags.js';
 import { completion } from './completion.js';
+import { emmet } from './emmet.js';
 
 const startsWithTag = (text) => /^\s*<\?/.test(text);
 
@@ -38,6 +39,8 @@ const BY_EXT = {
 };
 
 // 打つたびに補完の一覧を出すもの（ほかは Ctrl+Space で出す）。書き手が候補から選ぶことの多い、タグやプロパティの言語
+// Emmet を使うファイルと、その書き方
+const EMMET = { html: 'html', htm: 'html', tpl: 'html', xhtml: 'html', phtml: 'html', css: 'css', scss: 'scss', less: 'less' };
 const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', 'less', 'xml', 'svg', 'rss', 'md', 'markdown']);
 
 /**
@@ -49,10 +52,10 @@ const TYPING = new Set(['phtml', 'html', 'htm', 'tpl', 'xhtml', 'css', 'scss', '
 export function languageFor(kind, text, fileName, names) {
     // スニペット・プラグインなどの PHP には、補完の元が無い
     if (kind === 'php') return phpCode(text);
-    if (kind === 'html') return [htmlCode(text), completion({ typing: true, tags: true, names })];
+    if (kind === 'html') return [htmlCode(text), emmet('html'), completion({ typing: true, tags: true, names })];
     const ext = ((/\.([a-z0-9]+)$/i.exec(fileName || '') || [])[1] || '').toLowerCase();
     const make = BY_EXT[ext];
     // .htaccess・.txt など、決まった文法の無いものは色を付けない
     if (!make) return [];
-    return [make(text), completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
+    return [make(text), EMMET[ext] ? emmet(EMMET[ext]) : [], completion({ typing: TYPING.has(ext), tags: make === htmlCode, names })];
 }
